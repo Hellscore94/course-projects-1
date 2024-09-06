@@ -10,6 +10,7 @@ We use various boundary conditions.
 import numpy as np
 import matplotlib.pyplot as plt
 import sympy as sp
+from scipy import *
 
 t = sp.Symbol('t')
 
@@ -141,7 +142,13 @@ class VibFD2(VibSolver):
         assert T.is_integer() and T % 2 == 0
 
     def __call__(self):
-        u = np.zeros(self.Nt+1)
+        g = 2 - (self.w*self.dt)**2
+        A = sparse.diags([1, -g, 1], np.array([-1, 0, 1]), (self.Nt+1, self.Nt+1), 'lil')
+        b = np.zeros(self.Nt + 1)
+        A[0, 0], A[0, 1] = 1, 0
+        A[-1, -1], A[-1, -2] = 1, 0
+        b[0], b[-1] = self.I, self.I
+        u = sparse.linalg.spsolve(A.tocsr(), b)
         return u
 
 class VibFD3(VibSolver):
@@ -161,7 +168,13 @@ class VibFD3(VibSolver):
         assert T.is_integer() and T % 2 == 0
 
     def __call__(self):
-        u = np.zeros(self.Nt+1)
+        g = 2 - (self.w*self.dt)**2
+        A = sparse.diags([1, -g, 1], np.array([-1, 0, 1]), (self.Nt+1, self.Nt+1), 'lil')
+        b = np.zeros(self.Nt + 1)
+        A[0, 0], A[0, 1] = 1, 0
+        A[-1, -1], A[-1, -2], A[-1, -3] = 3, -4, 1 
+        b[0] = self.I
+        u = sparse.linalg.spsolve(A.tocsr(), b)
         return u
 
 class VibFD4(VibFD2):
@@ -175,7 +188,18 @@ class VibFD4(VibFD2):
     order = 4
 
     def __call__(self):
-        u = np.zeros(self.Nt+1)
+        g1 = 12*(self.w*self.dt)**2 - 30
+        g2 = 12*(self.w*self.dt)**2 - 15
+        A = sparse.diags([-1, 16, g1, 16, -1], np.array([-2, -1, 0, 1, 2]), (self.Nt+1, self.Nt+1), 'lil')
+        b = np.zeros(self.Nt + 1)
+        A[0, 0], A[0, 1], A[0, 2]= 1, 0, 0
+        A[-1, -1], A[-1, -2], A[-1, -3] = 1, 0, 0
+        b[0], b[-1] = self.I, self.I
+        A[1, :6] = 10, g2, -4, 14, -6, 1
+        A[-2, -6:] = 1, -6, 14, -4, g2, 10
+        b[0], b[-1] = self.I, self.I
+        u = sparse.linalg.spsolve(A.tocsr(), b)
+
         return u
 
 def test_order():
