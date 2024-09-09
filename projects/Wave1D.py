@@ -86,7 +86,7 @@ class Wave1D:
             self.unp1[-1] = num1*self.un[-1] - num2*self.unm1[-1] + num3*self.un[-2]
 
         elif bc == 3:
-            self.unp1[-1] = self.unp1[0]
+            u[-1] = u[0]
 
         else:
             raise RuntimeError(f"Wrong bc = {bc}")
