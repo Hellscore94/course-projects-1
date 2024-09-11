@@ -114,9 +114,13 @@ class Poisson:
 
 def test_poisson():
     object = Poisson(L=1)
-    u_num = object(N=30, bc=(0, 1))
-    u_exact = x**2
-    assert u_num.l2_error(u_num, u_exact) < 0.01
+    u_num1 = object(N=100, bc=(0, 1))
+    u_exact1 = x**2
+    assert object.l2_error(u_num1, u_exact1) < 1e-2
+    u_exact2 = sp.sin(sp.pi*x)
+    u_num2 = object(N=100, bc=(0, 0), f=sp.diff(u_exact2, x, 2))
+    assert object.l2_error(u_num2, u_exact2) < 1e-2
+
 
 
 if __name__ == '__main__':
@@ -130,3 +134,4 @@ if __name__ == '__main__':
     print(f'Boundary conditions: u(0)={bc[0]:2.4f}, u(L)={bc[1]:2.2f}')
     print(f'Discretization: N = {sol.N}')
     print(f'L2-error {sol.l2_error(u, ue)}')
+    test_poisson()
